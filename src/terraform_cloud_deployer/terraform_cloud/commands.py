@@ -73,7 +73,7 @@ def cancel(ctx, run_id):
 
 @run.command(name='list')
 @click.option('--full-output', '-o', help='Whether or not to print the full JSON output', is_flag=True, default=False)
-@click.option('--filters', '-f', help='[status|user]=values. Invalid filters are ignored', multiple=True)
+@click.option('--filters', '-f', help='[status|user|page|operation|source|search]=values. Invalid filters are ignored', multiple=True)
 @click.pass_context
 def list_runs(ctx, full_output, filters):
     """ List runs in [workspace_id] """
@@ -106,11 +106,15 @@ def format_filters(arguments):
 
     for argument in arguments:
         split_argument = argument.split('=')
-        if split_argument[0] in ['user', 'status']:
+        if split_argument[0] in ['user', 'status', 'page', 'operation', 'source', 'search']:
 
             formatted_argument = {
                 "user": re.sub('(user)', 'search[\\1]', split_argument[0]),
                 "status": re.sub('(status)', 'filter[\\1]', split_argument[0]),
+                "page": re.sub('(page)', 'page[number]', split_argument[0]),
+                "operation": re.sub('(operation)', 'filter[operation]', split_argument[0]),
+                "source": re.sub('(source)', 'filter[source]', split_argument[0]),
+                "search": re.sub('(search)', 'search[basic]', split_argument[0]),
             }
 
             formatted_arguments[formatted_argument[split_argument[0]]] = split_argument[1]
