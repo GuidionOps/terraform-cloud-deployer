@@ -7,6 +7,7 @@ https://developer.hashicorp.com/terraform/cloud-docs/api-docs/run
 import requests
 import json
 from pprint import pprint
+import sys
 
 # RUN_ID=$(echo "$RUN_REQUEST_RESPONSE" | jq -r '.data.id')
 # PLAN_ID=$(echo "$RUN_REQUEST_RESPONSE" | jq -r '.data.relationships.plan.data.id')
@@ -98,15 +99,22 @@ class Run():
         except Exception as e:
             print(f"Could not cancel run {run_id}: {e}")
 
-    def list(self, full_output):
+    def list(self, full_output, filters):
         """ List runs for [self.workspace_id] """
 
         headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
 
         # TODO: Needs pagination. This only grabs the first page
         runs = requests.get(
-                   f"{self.tfc_root_url}/workspaces/{self.workspace_id}/runs",
-                   headers=headers)
+                 f"{self.tfc_root_url}/workspaces/{self.workspace_id}/runs",
+                 headers=headers,
+                 params=filters)
+
+        if runs.status_code != 200:
+            errors = [message['detail'] for message in json.loads(runs.text)['errors']]
+            for this_error in errors:
+                print(this_error)
+                sys.exit(1)
 
         if full_output:
             run_output = runs.json().get('data')

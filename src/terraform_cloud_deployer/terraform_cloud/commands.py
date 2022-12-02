@@ -4,7 +4,6 @@ Commands for handling configuration versions
 
 import click
 import re
-import ast
 
 @click.group
 @click.pass_context
@@ -73,11 +72,10 @@ def cancel(ctx, run_id):
     run_object.cancel(run_id)
 
 @run.command(name='list')
-@click.option('--full-output', '-f', help='Whether or not to print the full JSON output', is_flag=True, default=False)
-# TODO:
-# @click.option('--filters', '-i', help='[status|user]=values. Invalid filters are ignored', multiple=True)
+@click.option('--full-output', '-o', help='Whether or not to print the full JSON output', is_flag=True, default=False)
+@click.option('--filters', '-f', help='[status|user]=values. Invalid filters are ignored', multiple=True)
 @click.pass_context
-def list_runs(ctx, full_output):
+def list_runs(ctx, full_output, filters):
     """ List runs in [workspace_id] """
 
     tfc_api_token = ctx.obj['tfc_api_token']
@@ -89,4 +87,32 @@ def list_runs(ctx, full_output):
     from terraform_cloud_deployer.terraform_cloud import run as run_class
     run_object = run_class.Run(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
 
-    run_object.list(full_output)
+    run_object.list(full_output, format_filters(filters))
+
+# Helper functions
+
+def format_filters(arguments):
+    """
+    Takes a tuple of [arguments], returns a dict formatted to be usable as
+    either 'filter' or 'search' arguments. Abstracts away the need to know
+    which is which.
+
+    See here for differences:
+
+    https://developer.hashicorp.com/terraform/cloud-docs/api-docs/run#query-parameters
+    """
+
+    formatted_arguments = {}
+
+    for argument in arguments:
+        split_argument = argument.split('=')
+        if split_argument[0] in ['user', 'status']:
+
+            formatted_argument = {
+                "user": re.sub('(user)', 'search[\\1]', split_argument[0]),
+                "status": re.sub('(status)', 'filter[\\1]', split_argument[0]),
+            }
+
+            formatted_arguments[formatted_argument[split_argument[0]]] = split_argument[1]
+
+    return formatted_arguments
