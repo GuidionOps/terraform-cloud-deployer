@@ -32,7 +32,14 @@ class Run():
         self.tfc_workspace = tfc_workspace
 
         headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
-        self.workspace_id = requests.get(f"{self.tfc_root_url}/organizations/{tfc_organisation}/workspaces/{tfc_workspace}", headers=headers).json().get('data').get('id')
+        try:
+            workspace_response = requests.get(f"{self.tfc_root_url}/organizations/{tfc_organisation}/workspaces/{tfc_workspace}", headers=headers)
+            workspace_response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            print(f"Error getting information on workspace {self.tfc_workspace}. Does the token you're using have access to it?:\n{e}")
+            sys.exit(1)
+
+        self.workspace_id = workspace_response.json()['data']['id']
 
     def start(self, configuration_id):
         """ Start a run on [configuration_id] and return the run ID """
@@ -62,10 +69,14 @@ class Run():
         })
 
         headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
-        response = requests.post(
-                                f"{self.tfc_root_url}/runs",
-                                headers=headers,
-                                data=run_data)
+        try:
+            response = requests.post(
+                                    f"{self.tfc_root_url}/runs",
+                                    headers=headers,
+                                    data=run_data)
+        except requests.exceptions.HTTPError as e:
+            print(f"Error starting a run in workspace {self.tfc_workspace} for configuration id {configuration_id}:\n{e}")
+            sys.exit(1)
 
         run_id = response.json().get('data').get('id')
         print(f"https://app.terraform.io/app/{self.tfc_organisation}/workspaces/{self.tfc_workspace}/runs/{run_id}")
