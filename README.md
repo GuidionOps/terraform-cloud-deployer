@@ -37,17 +37,17 @@ $ tfcd -w data-development configuration create | xargs tfcd -w data-development
 
 A convenience image for use with CI/CD tools such as Gitlab and Circle CI is available here:
 
-`ghcr.io/guidionops/terraform-cloud-deployer:0.0.1`
+`ghcr.io/guidionops/terraform-cloud-deployer:0.0.2`
 
 with an `ENTRYPOINT` to the `tfcd` executable, so usage is simply:
 
 ```sh
-docker run ghcr.io/guidionops/terraform-cloud-deployer:0.0.1 -w data-development run list
+docker run ghcr.io/guidionops/terraform-cloud-deployer:0.0.2 -w data-development run list
 ```
 
 To put the above example in use as a job container then, you say something like:
 
 ```yaml
-image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.1
+image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.2
 command: -w data-development run list
 ```
