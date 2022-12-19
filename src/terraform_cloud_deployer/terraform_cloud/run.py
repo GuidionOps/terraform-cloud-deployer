@@ -9,19 +9,6 @@ import json
 from pprint import pprint
 import sys
 
-# RUN_ID=$(echo "$RUN_REQUEST_RESPONSE" | jq -r '.data.id')
-# PLAN_ID=$(echo "$RUN_REQUEST_RESPONSE" | jq -r '.data.relationships.plan.data.id')
-# # shellcheck disable=SC2034
-# RUN_APPLY_ID=$(echo "$RUN_REQUEST_RESPONSE" | jq -r '.data.relationships.apply.data.id')
-
-# # This is needed to workaround Circle CI not being able to pass parameters
-# RUN_URL="https://app.terraform.io/app/$TERRAFORM_CLOUD_ORGANISATION_NAME/workspaces/$WORKSPACE_NAME/runs/$RUN_ID"
-# echo "$RUN_URL"
-# if [[ -n "$CI" ]]; then
-#   echo "export RUN_URL=$RUN_URL" >> "$BASH_ENV"
-#   curl -s -f -H "Content-type: application/json" --data "{\"channel\":\"$SLACK_CHANNEL\",\"blocks\": [{\"type\": \"section\",\"text\": {\"type\": \"mrkdwn\",\"text\": \"A deploy is waiting in production\"},\"accessory\": {\"type\": \"button\",\"text\": {\"type\": \"plain_text\",\"text\": \"Go to Terraform Cloud Run\",\"emoji\": true}, \"value\": \"click_me_123\", \"url\": \"$RUN_URL\", \"action_id\": \"button-action\"}}]}" -H "Authorization: Bearer $SLACK_ACCESS_TOKEN" -X POST https://slack.com/api/chat.postMessage
-# fi
-
 class Run():
     """ Methods for creating and interacting with Terraform Cloud runs """
 
@@ -42,7 +29,7 @@ class Run():
         self.workspace_id = workspace_response.json()['data']['id']
 
     def start(self, configuration_id):
-        """ Start a run on [configuration_id] and return the run ID """
+        """ Start a run on [configuration_id] and return {run_url, run_id} """
 
         run_data = json.dumps(
         {
@@ -79,9 +66,11 @@ class Run():
             sys.exit(1)
 
         run_id = response.json().get('data').get('id')
-        print(f"https://app.terraform.io/app/{self.tfc_organisation}/workspaces/{self.tfc_workspace}/runs/{run_id}")
 
-        return run_id
+        return {
+          "run_url": f"https://app.terraform.io/app/{self.tfc_organisation}/workspaces/{self.tfc_workspace}/runs/{run_id}",
+          "run_id": run_id
+        }
 
     def cancel(self, run_id, comment=None):
         """

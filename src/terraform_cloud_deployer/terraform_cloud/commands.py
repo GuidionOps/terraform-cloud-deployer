@@ -1,5 +1,5 @@
 """
-Commands for handling configuration versions
+Commands for handling configuration versions and runs in Terraform Cloud
 """
 
 import click
@@ -8,7 +8,7 @@ import re
 @click.group
 @click.pass_context
 def configuration(ctx): # pylint: disable=unused-argument
-    """ Commands for handling configuration versions """
+    """ Commands for handling configuration versions and runs for Terraform Cloud """
     pass # pylint: disable=unnecessary-pass
 
 @configuration.command()
@@ -22,7 +22,6 @@ def create(ctx, terraform_directory, code_directory):
     tfc_organisation = ctx.obj['tfc_organisation']
     tfc_workspace = ctx.obj['tfc_workspace']
     tfc_root_url = ctx.obj['tfc_root_url']
-    slack_channel = ctx.obj['slack_channel']
 
     from terraform_cloud_deployer.terraform_cloud import configuration as configuration_class
     configuration_object = configuration_class.Configuration(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
@@ -46,7 +45,6 @@ def start(ctx, configuration_id):
     tfc_organisation = ctx.obj['tfc_organisation']
     tfc_workspace = ctx.obj['tfc_workspace']
     tfc_root_url = ctx.obj['tfc_root_url']
-    slack_channel = ctx.obj['slack_channel']
 
     from terraform_cloud_deployer.terraform_cloud import run as run_class
     run_object = run_class.Run(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
@@ -64,7 +62,6 @@ def cancel(ctx, run_id):
     tfc_organisation = ctx.obj['tfc_organisation']
     tfc_workspace = ctx.obj['tfc_workspace']
     tfc_root_url = ctx.obj['tfc_root_url']
-    slack_channel = ctx.obj['slack_channel']
 
     from terraform_cloud_deployer.terraform_cloud import run as run_class
     run_object = run_class.Run(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
@@ -82,7 +79,6 @@ def list_runs(ctx, full_output, filters):
     tfc_organisation = ctx.obj['tfc_organisation']
     tfc_workspace = ctx.obj['tfc_workspace']
     tfc_root_url = ctx.obj['tfc_root_url']
-    slack_channel = ctx.obj['slack_channel']
 
     from terraform_cloud_deployer.terraform_cloud import run as run_class
     run_object = run_class.Run(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
