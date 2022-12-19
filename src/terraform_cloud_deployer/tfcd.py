@@ -5,6 +5,7 @@ Top level Terraform Cloud API CLI helper. See the *_commands imports inside for 
 import logging
 import click
 import os
+import sys
 
 from terraform_cloud_deployer import __version__
 
@@ -26,8 +27,12 @@ def main(ctx, tfc_organisation, tfc_api_token, tfc_workspace, slack_channel):
     Top level Click group for commands. Passes all options down to sub-commands.
     """
 
-    tfc_api_token = tfc_api_token or os.environ['TERRAFORM_CLOUD_API_TOKEN']
-    tfc_root_url = f"https://app.terraform.io/api/v2"
+    try:
+        tfc_api_token = tfc_api_token or os.environ['TERRAFORM_CLOUD_API_TOKEN']
+        tfc_root_url = "https://app.terraform.io/api/v2"
+    except KeyError:
+        print("Please ensure that either the environment variable TERRAFORM_CLOUD_API_TOKEN is set, or you pass it in with the -t flag")
+        sys.exit(1)
 
     ctx.obj = {
         'tfc_api_token': tfc_api_token,

@@ -1,0 +1,40 @@
+version: 2.1
+description: Use terraform-cloud-deployer to create a run on Terraform Cloud
+
+# https://circleci.com/docs/configuration-reference/
+
+commands:
+  create-configuration:
+    description: Create a TFC configuration from repository contents
+    parameters:
+      workspace:
+        type: string
+      code_directory:
+        type: string
+    steps:
+      - run: tfcd -w <<parameters.workspace>> configuration create -c <<parameters.code_directory>> > configuration_id
+  create-run:
+    description: Create and start a run on TFC
+    parameters:
+      workspace:
+        type: string
+    steps:
+      - run: tfcd -w <<parameters.workspace>> run start -c $(cat configuration_id)
+
+jobs:
+  deploy:
+    docker:
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.4
+    parameters:
+      workspace:
+        type: string
+      code_directory:
+        type: string
+    steps:
+      - attach_workspace:
+          at: /build
+      - create-configuration:
+          workspace: <<parameters.workspace>>
+          code_directory: <<parameters.code_directory>>
+      - create-run:
+          workspace: <<parameters.workspace>>
