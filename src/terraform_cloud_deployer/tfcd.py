@@ -21,8 +21,7 @@ _logger = logging.getLogger(__name__)
 @click.option("--tfc-organisation", '-o', default='guidion', help='Terraform Cloud organisation name')
 @click.option("--tfc-api-token", '-t', help='Terraform Cloud API token')
 @click.option("--tfc-workspace", '-w', help='Terraform Cloud workspace name', required=True)
-@click.option("--slack-channel", '-s', default='', help='Slack channel to send deploy URL to')
-def main(ctx, tfc_organisation, tfc_api_token, tfc_workspace, slack_channel):
+def main(ctx, tfc_organisation, tfc_api_token, tfc_workspace):
     """
     Top level Click group for commands. Passes all options down to sub-commands.
     """
@@ -38,11 +37,12 @@ def main(ctx, tfc_organisation, tfc_api_token, tfc_workspace, slack_channel):
         'tfc_api_token': tfc_api_token,
         'tfc_organisation': tfc_organisation,
         'tfc_workspace': tfc_workspace,
-        'tfc_root_url': tfc_root_url,
-        'slack_channel': slack_channel
+        'tfc_root_url': tfc_root_url
     }
 
 from terraform_cloud_deployer.terraform_cloud.commands import configuration as configuration_commands
 from terraform_cloud_deployer.terraform_cloud.commands import run as run_commands
+from terraform_cloud_deployer.communication.commands import communication as communication_commands
 main.add_command(configuration_commands)
 main.add_command(run_commands)
+main.add_command(communication_commands)
