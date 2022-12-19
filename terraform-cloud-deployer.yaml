@@ -24,7 +24,7 @@ commands:
 jobs:
   deploy:
     docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.4
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.5
     parameters:
       workspace:
         type: string
