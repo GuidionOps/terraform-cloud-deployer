@@ -12,7 +12,8 @@ commands:
       code_directory:
         type: string
     steps:
-      - run: tfcd -w <<parameters.workspace>> configuration create -c <<parameters.code_directory>> > configuration_id
+      - checkout
+      - run: tfcd -w <<parameters.workspace>> configuration create -c <<parameters.code_directory>> | tee configuration_id
   create-run:
     description: Create and start a run on TFC
     parameters:
@@ -24,7 +25,7 @@ commands:
 jobs:
   deploy:
     docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.5
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.6
     parameters:
       workspace:
         type: string

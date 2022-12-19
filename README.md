@@ -96,6 +96,8 @@ The Terraform directory — which can be set with the flag `-t` to our `tfcd` pr
 
 Although the orb file is named `terraform-cloud-deployer.yaml`, it's actually deployed to the name `iac-deployer`. This is to maintain API abstraction for developer usage, and means we are unshackled from specific tooling.
 
+It's also important to understand that the orb versions have no relation to git tags, hashes, or anything else. They're automatically incremented with the relevant `circleci` publish command (see below). This means that although — strictly speaking — this isn't the proper place for the orb file, it has no practical effect, since completely different publication methods are in use. If we were to use something like Gitlab in future though, then this file should move home to it's own repo.
+
 Test changes with:
 
 ```

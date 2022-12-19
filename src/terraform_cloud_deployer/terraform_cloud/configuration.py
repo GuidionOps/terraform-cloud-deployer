@@ -10,6 +10,7 @@ import datetime
 import requests
 import time
 import sys
+import logging
 
 class Configuration():
     """ Methods for creating and interacting with Terraform Cloud configuration versions """
@@ -62,7 +63,7 @@ class Configuration():
                                   files=this_file)
 
         while self.get_configuration_info(configuration_version.get('configuration_id')).json().get('data').get('attributes').get('status') != 'uploaded':
-            print("Configuration version is not ready yet")
+            logging.info("Configuration version is not ready yet")
             time.sleep(2)
 
     def get_configuration_info(self, configuration_id):
