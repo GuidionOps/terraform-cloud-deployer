@@ -72,22 +72,24 @@ The orb uses this repo's [terraform-cloud-deployer](https://github.com/GuidionOp
 version: 2.1
 
 orbs:
-  iac-deployer: guidionops/iac-deployer:0.0.4
+  iac-deployer: guidionops/iac-deployer@dev:first
 
 workflows:
-  build:
-    jobs:
-      steps:
-      ... [YOUR BUILD PROCESS, OUTPUTTING TO A FOLDER CALLED 'artifacts'] ...
-        - persist_to_workspace:
-            root: /build
-            paths:
-              - .
-  deploy:
+  deploy_to_development:
     jobs:
       - iac-deployer/deploy:
-          workspace: tfc-workspace-name
-          code_directory: /build/artifacts
+          workspace: web-development
+          code_directory: './lambdas'
+          slack_channel: 'afrazs-random-channel-of-madness'
+          slack_access_token: $SLACK_ACCESS_TOKEN
+          context:
+            - org-global
+            - global
+            - web-development
+          filters:
+            branches:
+              only:
+                - development
 ```
 
 The Terraform directory — which can be set with the flag `-t` to our `tfcd` program — is hardcoded to `.`, so make sure all of your Terraform code is in the root folder.
