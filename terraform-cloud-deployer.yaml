@@ -31,12 +31,13 @@ commands:
       slack_access_token:
         type: string
     steps:
+      - run: cat run_output
       - run: tfcd -w <<parameters.workspace>> communication send -s <<parameters.slack_channel>> -t <<parameters.slack_access_token>> --run-url $(cat run_output | jq -r .run_url)
 
 jobs:
   deploy:
     docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.7
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.8
     parameters:
       workspace:
         type: string

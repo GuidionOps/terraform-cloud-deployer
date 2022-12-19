@@ -67,10 +67,10 @@ class Run():
 
         run_id = response.json().get('data').get('id')
 
-        return {
+        return json.dumps({
           "run_url": f"https://app.terraform.io/app/{self.tfc_organisation}/workspaces/{self.tfc_workspace}/runs/{run_id}",
           "run_id": run_id
-        }
+        })
 
     def cancel(self, run_id, comment=None):
         """
