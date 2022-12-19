@@ -30,7 +30,7 @@ $ tfcd -w data-development run start -c cv-thisisanexample
 A new command which does both may be added in future, but it's a two step process for the moment in order to promote error handling for both steps. Of course you could disregard this recommmondation and easily combine them anyway, in the shell:
 
 ```sh
-$ tfcd -w data-development configuration create | xargs tfcd -w data-development run start -c
+tfcd -w data-development configuration create | xargs tfcd -w data-development run start -c
 ```
 
 ## Docker
@@ -51,3 +51,63 @@ To put the above example in use as a job container then, you say something like:
 image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.2
 command: -w data-development run list
 ```
+
+## Deploying
+
+Simply push a new tag, and Github Actions will create a new Docker tag here:
+
+```sh
+ghcr.io/guidionops/terraform-cloud-deployer:[TAG]
+```
+
+# Circle CI 'Orb'
+
+This repo is doubling up as the source for a Circle CI Orb called `guidionops/iac-deployer`.
+
+The orb uses this repo's [terraform-cloud-deployer](https://github.com/GuidionOps/terraform-cloud-deployer) package ([Docker image](https://github.com/GuidionOps/terraform-cloud-deployer/pkgs/container/terraform-cloud-deployer)) to piece together the tasks necessary for a complete workflow which executes runs on Terraform Cloud. See that repo for details of how this works.
+
+## Usage Example
+
+```yaml
+version: 2.1
+
+orbs:
+  iac-deployer: guidionops/iac-deployer:0.0.4
+
+workflows:
+  build:
+    jobs:
+      steps:
+      ... [YOUR BUILD PROCESS, OUTPUTTING TO A FOLDER CALLED 'artifacts'] ...
+        - persist_to_workspace:
+            root: /build
+            paths:
+              - .
+  deploy:
+    jobs:
+      - iac-deployer/deploy:
+          workspace: tfc-workspace-name
+          code_directory: /build/artifacts
+```
+
+The Terraform directory — which can be set with the flag `-t` to our `tfcd` program — is hardcoded to `.`, so make sure all of your Terraform code is in the root folder.
+
+## Deploying
+
+Although the orb file is named `terraform-cloud-deployer.yaml`, it's actually deployed to the name `iac-deployer`. This is to maintain API abstraction for developer usage, and means we are unshackled from specific tooling.
+
+Test changes with:
+
+```
+circleci orb publish terraform-cloud-deployer.yaml guidionops/iac-deployer@dev:first
+```
+
+which will give you `guidionops/iac-deployer@dev:first` to use in your Circle CI configurations.
+
+Once you have a new version ready, push with:
+
+```sh
+circleci orb publish promote guidionops/iac-deployer@dev:first patch
+```
+
+and you can use `guidionops/iac-deployer@dev:[TAG YOU GOT BACK]` in configurations.

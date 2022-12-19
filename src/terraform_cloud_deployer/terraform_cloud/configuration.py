@@ -20,12 +20,12 @@ class Configuration():
 
         headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
         try:
-            workspace_info = requests.get(f"{self.tfc_root_url}/organizations/{tfc_organisation}/workspaces/{tfc_workspace}", headers=headers).raise_for_status()
-        except requests.exceptions.HTTPError as e:
+            workspace_info = requests.get(f"{self.tfc_root_url}/organizations/{tfc_organisation}/workspaces/{tfc_workspace}", headers=headers)
+            workspace_info.raise_for_status()
+            self.workspace_id = workspace_info.json().get('data').get('id')
+        except (requests.exceptions.HTTPError, AttributeError) as e:
             print(f"Failed to get information for workspace {tfc_workspace}:\n{e}")
             sys.exit(1)
-
-        self.workspace_id = workspace_info.json().get('data').get('id')
 
     def create(self, terraform_directory, code_directory):
         """ Create and upload a configuration version from [terraform_directory], [code_directory] """
