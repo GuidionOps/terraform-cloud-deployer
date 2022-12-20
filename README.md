@@ -1,14 +1,21 @@
 [![Project generated with PyScaffold](https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold)](https://pyscaffold.org/)
 
-# terraform-cloud-deployer
-
 > Helper scripts for performing Terraform CI/CD operations
+
+Note that this repository doubles up both for the Python package, and the Circle CI Orb that uses it. There are separate instructions detailed for usage and deployments of each.
+
+If you are using Circle CI, the easiest way to get started is to use the [Orb](#usage-example), else you can use the Docker image, or even the package itself directly to create your own flows.
+
+- [Usage and Installation](#usage-and-installation)
+  - [Docker](#docker)
+  - [Deploying](#deploying)
+- [Circle CI 'Orb'](#circle-ci-orb)
+  - [Usage Example](#usage-example)
+  - [Deploying](#deploying-1)
 
 # Usage and Installation
 
 For now, you clone this repo and run `pip install .`
-
-It currently expects the environment variable `TERRAFORM_CLOUD_API_TOKEN` to be present, and set to a _team_ token that has access to the workspaces you will use it for. Then run `tfcd --help` for usage.
 
 Runs are performed in two steps; building and uploading the configuration to Terraform Cloud, and starting a new run from that configuration. The TFC Configuration API is described [here](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/configuration-versions), and the run API [here](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/run).
 
@@ -102,7 +109,7 @@ It's also important to understand that the orb versions have no relation to git 
 
 Test changes with:
 
-```
+```sh
 circleci orb publish terraform-cloud-deployer.yaml guidionops/iac-deployer@dev:first
 ```
 
