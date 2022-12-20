@@ -19,13 +19,15 @@ class Configuration():
         self.tfc_api_token = tfc_api_token
         self.tfc_root_url = tfc_root_url
 
-        headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
+        self.headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
         try:
-            workspace_info = requests.get(f"{self.tfc_root_url}/organizations/{tfc_organisation}/workspaces/{tfc_workspace}", headers=headers)
+            workspace_info = requests.get(f"{self.tfc_root_url}/organizations/{tfc_organisation}/workspaces/{tfc_workspace}", headers=self.headers)
             workspace_info.raise_for_status()
             self.workspace_id = workspace_info.json().get('data').get('id')
         except (requests.exceptions.HTTPError, AttributeError) as e:
-            print(f"Failed to get information for workspace {tfc_workspace}:\n{e}")
+            print(f"Failed to get information for workspace '{tfc_workspace}'")
+            logging.error(e)
+            print("Check supplied token and workspace")
             sys.exit(1)
 
     def create(self, terraform_directory, code_directory):
@@ -40,10 +42,9 @@ class Configuration():
     def create_configuration(self):
         """ Create new configuration version, return {configuration_id, upload_url} for use """
 
-        headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
         response = requests.post(
                                   f"{self.tfc_root_url}/workspaces/{self.workspace_id}/configuration-versions",
-                                  headers=headers,
+                                  headers=self.headers,
                                   data='{"data":{"type":"configuration-versions", "attributes":{"auto-queue-runs": false}}}')
 
         configuration_id = response.json().get('data').get('id')
@@ -56,11 +57,7 @@ class Configuration():
 
         this_file = {'file': open(data_file, 'rb')}
 
-        headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
-        response = requests.put(
-                                  configuration_version.get('upload_url'),
-                                  headers=headers,
-                                  files=this_file)
+        requests.put( configuration_version.get('upload_url'), headers=self.headers, files=this_file)
 
         while self.get_configuration_info(configuration_version.get('configuration_id')).json().get('data').get('attributes').get('status') != 'uploaded':
             logging.info("Configuration version is not ready yet")
@@ -69,33 +66,11 @@ class Configuration():
     def get_configuration_info(self, configuration_id):
         """ Enter a wait loop for configuration status to change to 'uploaded' """
 
-        headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
         configuration_info = requests.get(
                                   f"{self.tfc_root_url}/configuration-versions/{configuration_id}",
-                                  headers=headers)
+                                  headers=self.headers)
 
         return configuration_info
-
-
-
-    # CONFIGURATION_VERSION_STATUS=$(curl -f -s\
-    #     --header "Authorization: Bearer $TERRAFORM_CLOUD_API_TOKEN" \
-    #     --header "Content-Type: application/vnd.api+json" \
-    #     --request GET \
-    #     https://app.terraform.io/api/v2/configuration-versions/$CONFIGURATION_ID \
-    #     | jq -r '.data.attributes.status')
-    # }
-
-# # Wait for the configuration version to be ready
-# get_configuration_status
-# while [[ "$CONFIGURATION_VERSION_STATUS" != "uploaded" ]]; do
-#   get_configuration_status
-
-#   echo "Configuration version is: $CONFIGURATION_VERSION_STATUS"
-#   sleep 2
-# done
-
-
 
 # Functions
 

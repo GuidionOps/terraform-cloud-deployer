@@ -1,5 +1,5 @@
 """
-Top level Terraform Cloud API CLI helper. See the *_commands imports inside for sub-commands
+Top level Terraform Cloud API CLI helper. See the commands imports inside for sub-commands
 """
 
 import logging
@@ -23,7 +23,7 @@ _logger = logging.getLogger(__name__)
 @click.option("--tfc-workspace", '-w', help='Terraform Cloud workspace name', required=True)
 def main(ctx, tfc_organisation, tfc_api_token, tfc_workspace):
     """
-    Top level Click group for commands. Passes all options down to sub-commands.
+    Helper package for performing Terraform CI/CD operations. Also talks a bit to Slack ;)
     """
 
     try:
