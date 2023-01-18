@@ -11,16 +11,20 @@ commands:
         type: string
       code_directory:
         type: string
+      tfc_api_token:
+        type: string
     steps:
       - checkout
-      - run: tfcd -w <<parameters.workspace>> configuration create -c <<parameters.code_directory>> | tee configuration_id
+      - run: tfcd -t <<parameters.tfc_api_token>> -w <<parameters.workspace>> configuration create -c <<parameters.code_directory>> | tee configuration_id
   create-run:
     description: Create and start a run on TFC
     parameters:
       workspace:
         type: string
+      tfc_api_token:
+        type: string
     steps:
-      - run: tfcd -w <<parameters.workspace>> run start -c $(cat configuration_id) | tee run_output
+      - run: tfcd -t <<parameters.tfc_api_token>> -w <<parameters.workspace>> run start -c $(cat configuration_id) | tee run_output
   send-message:
     description: Send messages about pending runs
     parameters:
@@ -39,6 +43,8 @@ jobs:
     docker:
       - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.8
     parameters:
+      tfc_api_token:
+        type: string
       workspace:
         type: string
       code_directory:
@@ -51,9 +57,11 @@ jobs:
       - attach_workspace:
           at: /build
       - create-configuration:
+          tfc_api_token: <<parameters.tfc_api_token>>
           workspace: <<parameters.workspace>>
           code_directory: <<parameters.code_directory>>
       - create-run:
+          tfc_api_token: <<parameters.tfc_api_token>>
           workspace: <<parameters.workspace>>
       - send-message:
           workspace: <<parameters.workspace>>

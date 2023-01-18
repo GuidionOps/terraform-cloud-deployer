@@ -85,6 +85,7 @@ workflows:
   deploy_to_development:
     jobs:
       - iac-deployer/deploy:
+          tfc_api_token: $[ENVIRONMENT]_TFC_API_TOKEN
           workspace: web-development
           code_directory: './lambdas'
           slack_channel: 'afrazs-random-channel-of-madness'
@@ -99,7 +100,7 @@ workflows:
                 - development
 ```
 
-The Terraform directory — which can be set with the flag `-t` to our `tfcd` program — is hardcoded to `.`, so make sure all of your Terraform code is in the root folder.
+The Terraform directory — which can be set with the flag `-t` to the `configuration create subcommand` (e.g. `tfcd -w ws-foobar configuration create -t some_directory`) — is hardcoded to `.` in this Circle CI Orb, so make sure all of your Terraform code is in the root folder.
 
 ## Deploying
 
