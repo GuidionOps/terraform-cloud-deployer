@@ -111,15 +111,15 @@ It's also important to understand that the orb versions have no relation to git 
 Test changes with:
 
 ```sh
-circleci orb publish terraform-cloud-deployer.yaml guidionops/iac-deployer@dev:first
+circleci orb publish terraform-cloud-deployer.yaml guidionops/iac-deployer@dev:[SOME_IDENTIFIER]
 ```
 
-which will give you `guidionops/iac-deployer@dev:first` to use in your Circle CI configurations.
+which will allow you to use `guidionops/iac-deployer@dev:[SOME_IDENTIFIER]` Circle CI configurations. Bear in mind that this is a dev version, and will only be available for 90 days.
 
-Once you have a new version ready, push with:
+Once you're happy with the dev version, release with:
 
 ```sh
-circleci orb publish promote guidionops/iac-deployer@dev:first patch
+circleci orb publish promote guidionops/iac-deployer@dev:[SOME_IDENTIFIER] patch
 ```
 
-and you can use `guidionops/iac-deployer@dev:[TAG YOU GOT BACK]` in configurations.
+and you can then use `guidionops/iac-deployer@[TAG YOU GOT BACK]` in configurations.

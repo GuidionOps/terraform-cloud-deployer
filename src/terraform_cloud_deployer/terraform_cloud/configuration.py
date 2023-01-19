@@ -42,10 +42,9 @@ class Configuration():
     def create_configuration(self):
         """ Create new configuration version, return {configuration_id, upload_url} for use """
 
-        response = requests.post(
-                                  f"{self.tfc_root_url}/workspaces/{self.workspace_id}/configuration-versions",
-                                  headers=self.headers,
-                                  data='{"data":{"type":"configuration-versions", "attributes":{"auto-queue-runs": false}}}')
+        response = requests.post(f"{self.tfc_root_url}/workspaces/{self.workspace_id}/configuration-versions",
+                                 headers=self.headers,
+                                 data='{"data":{"type":"configuration-versions", "attributes":{"auto-queue-runs": false}}}')
 
         configuration_id = response.json().get('data').get('id')
         upload_url = response.json().get('data').get('attributes').get('upload-url')
@@ -57,7 +56,9 @@ class Configuration():
 
         this_file = {'file': open(data_file, 'rb')}
 
-        requests.put( configuration_version.get('upload_url'), headers=self.headers, files=this_file)
+        these_headers = self.headers
+        these_headers['Content-Type'] = "application/octet-stream"
+        requests.put(configuration_version.get('upload_url'), headers=these_headers, data=this_file)
 
         while self.get_configuration_info(configuration_version.get('configuration_id')).json().get('data').get('attributes').get('status') != 'uploaded':
             logging.info("Configuration version is not ready yet")
