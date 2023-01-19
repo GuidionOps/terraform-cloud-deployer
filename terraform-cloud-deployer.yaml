@@ -41,7 +41,7 @@ commands:
 jobs:
   deploy:
     docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.8
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.9
     parameters:
       tfc_api_token:
         type: string
