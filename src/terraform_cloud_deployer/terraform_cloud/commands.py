@@ -12,6 +12,53 @@ def configuration(ctx): # pylint: disable=unused-argument
     pass # pylint: disable=unnecessary-pass
 
 @configuration.command()
+@click.pass_context
+def list(ctx):
+    """ List configuration versions for this workspace """
+
+    tfc_api_token = ctx.obj['tfc_api_token']
+    tfc_organisation = ctx.obj['tfc_organisation']
+    tfc_workspace = ctx.obj['tfc_workspace']
+    tfc_root_url = ctx.obj['tfc_root_url']
+
+    from terraform_cloud_deployer.terraform_cloud import configuration as configuration_class
+    configuration_object = configuration_class.Configuration(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
+
+    configuration_object.list()
+
+@configuration.command()
+@click.argument("configuration-id")
+@click.pass_context
+def show(ctx, configuration_id):
+    """ Show some formatted and pre-selected information about a configuration version """
+
+    tfc_api_token = ctx.obj['tfc_api_token']
+    tfc_organisation = ctx.obj['tfc_organisation']
+    tfc_workspace = ctx.obj['tfc_workspace']
+    tfc_root_url = ctx.obj['tfc_root_url']
+
+    from terraform_cloud_deployer.terraform_cloud import configuration as configuration_class
+    configuration_object = configuration_class.Configuration(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
+
+    configuration_object.show(configuration_id)
+
+@configuration.command()
+@click.argument("configuration-id")
+@click.pass_context
+def download(ctx, configuration_id):
+    """ Download the configuration package for [configuration-id] """
+
+    tfc_api_token = ctx.obj['tfc_api_token']
+    tfc_organisation = ctx.obj['tfc_organisation']
+    tfc_workspace = ctx.obj['tfc_workspace']
+    tfc_root_url = ctx.obj['tfc_root_url']
+
+    from terraform_cloud_deployer.terraform_cloud import configuration as configuration_class
+    configuration_object = configuration_class.Configuration(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
+
+    configuration_object.download(configuration_id)
+
+@configuration.command()
 @click.option('--terraform-directory', '-t', help='Where the Terraform files can be found', default='.')
 @click.option('--code-directory', '-c', help='Where the application code can be found', default='lambdas')
 @click.pass_context

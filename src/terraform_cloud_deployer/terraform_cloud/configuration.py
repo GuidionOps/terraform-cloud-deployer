@@ -30,6 +30,45 @@ class Configuration():
             print("Check supplied token and workspace")
             sys.exit(1)
 
+    def show(self, configuration_id):
+        """ Print and return information about [configuration_id] """
+
+        cv_full = requests.get(f"{self.tfc_root_url}/configuration-versions/{configuration_id}",
+                               headers=self.headers)
+
+        from pprint import pprint
+        pprint(cv_full.json())
+        return cv_full
+
+    def list(self):
+        """ List and return configuration IDs for this workspace """
+
+        response = requests.get(f"{self.tfc_root_url}/workspaces/{self.workspace_id}/configuration-versions",
+                               headers=self.headers).json()
+        cvs = response['data']
+
+        cv_list = []
+        for this_cv in cvs:
+            cv_list.append(this_cv['id'])
+
+        print(cv_list)
+        return cv_list
+
+    def download(self, configuration_id):
+        """ Download the configuration file of [configuration_id] """
+
+        local_filename = f"{configuration_id}.tar.gz"
+        cv_download_url = f"{self.tfc_root_url}/configuration-versions/{configuration_id}/download"
+        with requests.get(cv_download_url, stream=True, headers=self.headers) as r:
+            r.raise_for_status()
+            with open(local_filename, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    # If you have chunk encoded response uncomment if
+                    # and set chunk_size parameter to None.
+                    # if chunk:
+                    f.write(chunk)
+        return local_filename
+
     def create(self, terraform_directory, code_directory):
         """ Create and upload a configuration version from [terraform_directory], [code_directory] """
 
@@ -54,7 +93,7 @@ class Configuration():
     def upload_configuration(self, configuration_version, data_file):
         """ Upload data (Terraform code) to [configuration_version] """
 
-        this_file = {'file': open(data_file, 'rb')}
+        this_file = open(data_file, 'rb')
 
         these_headers = self.headers
         these_headers['Content-Type'] = "application/octet-stream"
@@ -65,7 +104,7 @@ class Configuration():
             time.sleep(2)
 
     def get_configuration_info(self, configuration_id):
-        """ Enter a wait loop for configuration status to change to 'uploaded' """
+        """ Fetch and return information on [configuration_id] """
 
         configuration_info = requests.get(
                                   f"{self.tfc_root_url}/configuration-versions/{configuration_id}",
@@ -81,10 +120,14 @@ def package_configuration(terraform_directory, code_directory):
     this_date = datetime.datetime.now().isoformat()
     terraform_files = glob.glob(f"{terraform_directory}/*.tf")
 
-    with tarfile.open(f"{this_date}.tar.gz", "w:gz") as tar_file:
-        tar_file.add(code_directory)
+    try:
+        with tarfile.open(f"{this_date}.tar.gz", "w:gz") as tar_file:
+            tar_file.add(code_directory)
 
-        for name in terraform_files:
-            tar_file.add(name)
+            for name in terraform_files:
+                tar_file.add(name)
+    except FileNotFoundError:
+        logging.error(f"File/directory {code_directory} does not exist")
+        sys.exit(1)
 
     return tar_file
