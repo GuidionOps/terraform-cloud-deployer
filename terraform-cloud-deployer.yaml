@@ -55,7 +55,7 @@ jobs:
         type: string
     steps:
       - attach_workspace:
-          at: /dist
+          at: ~/project
       - create-configuration:
           tfc_api_token: <<parameters.tfc_api_token>>
           workspace: <<parameters.workspace>>
