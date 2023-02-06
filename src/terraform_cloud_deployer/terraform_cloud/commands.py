@@ -84,8 +84,9 @@ def run(ctx): # pylint: disable=unused-argument
 
 @run.command()
 @click.option('--configuration-id', '-c', help='Configuration ID to start the run for', required=True)
+@click.option('--wait', '-w', is_flag=True, help='Whether to wait for the output of the plan (and output it)', default=False)
 @click.pass_context
-def start(ctx, configuration_id):
+def start(ctx, configuration_id, wait):
     """ Create and upload a Terraform Cloud configuration object """
 
     tfc_api_token = ctx.obj['tfc_api_token']
@@ -96,11 +97,46 @@ def start(ctx, configuration_id):
     from terraform_cloud_deployer.terraform_cloud import run as run_class
     run_object = run_class.Run(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
 
-    run_id = run_object.start(configuration_id)
+    run_id = run_object.start(configuration_id, wait)
     print(run_id)
 
 @run.command()
-@click.option('--run-id', '-r', help='Run ID to delete', required=True)
+@click.argument('plan_id')
+@click.pass_context
+def show_plan(ctx, plan_id):
+    """ Get and print [plan_id] """
+
+    tfc_api_token = ctx.obj['tfc_api_token']
+    tfc_organisation = ctx.obj['tfc_organisation']
+    tfc_workspace = ctx.obj['tfc_workspace']
+    tfc_root_url = ctx.obj['tfc_root_url']
+
+    from terraform_cloud_deployer.terraform_cloud import run as run_class
+    run_object = run_class.Run(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
+
+    output = run_object.get_plan(plan_id)
+    from pprint import pprint
+    pprint(output)
+
+@run.command()
+@click.option('--comment', '-m', help='Optional comment on why this is happening', default=None)
+@click.pass_context
+def apply(ctx, run_id, comment):
+    """ Try to apply a plan """
+
+    tfc_api_token = ctx.obj['tfc_api_token']
+    tfc_organisation = ctx.obj['tfc_organisation']
+    tfc_workspace = ctx.obj['tfc_workspace']
+    tfc_root_url = ctx.obj['tfc_root_url']
+
+    from terraform_cloud_deployer.terraform_cloud import run as run_class
+    run_object = run_class.Run(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
+
+    # output = run_object.apply(run_id, comment)
+    # print(output)
+
+@run.command()
+@click.argument('run-id', required=True)
 @click.pass_context
 def cancel(ctx, run_id):
     """ Cancel [run_id]. Use with caution on scheduled runs """
