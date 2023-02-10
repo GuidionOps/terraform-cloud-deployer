@@ -31,8 +31,11 @@ class Run():
 
         self.workspace_id = workspace_response.json()['data']['id']
 
-    def start(self, configuration_id, wait):
-        """ Start a run on [configuration_id] and return {run_url, run_id, plan_id} """
+    def queue(self, configuration_id, wait):
+        """
+        Queue a run for [configuration_id] and return {run_url, run_id, plan_id}.
+        Will wait for the run to start if [wait] is non-false
+        """
 
         run_data = json.dumps(
         {
@@ -65,11 +68,13 @@ class Run():
                                     headers=headers,
                                     data=run_data)
         except requests.exceptions.HTTPError as e:
-            print(f"Error starting a run in workspace {self.tfc_workspace} for configuration id {configuration_id}:\n{e}")
+            print(f"Error queuing a run in workspace {self.tfc_workspace} for configuration id {configuration_id}:\n{e}")
             sys.exit(1)
 
+        # TODO: Catch this when there's no data
         run_id = response.json()['data']['id']
         plan_id = response.json()['data']['relationships']['plan']['data']['id']
+
         if wait:
             # TODO: If we print here, we'd have to write the outputs of the CICD commands to
             #       a file instead, else this output would be included to the next CICD job
@@ -98,7 +103,7 @@ class Run():
 
         return plan_id
 
-    def get_plan_information(self, plan_id):
+    def get_plan_metadata(self, plan_id):
         """
         Return information on [plan_id]
         """
@@ -117,7 +122,10 @@ class Run():
     def get_plan(self, plan_id):
         """
         Return a string representation of a parsed JSON plan of [plan_id].
-        Can secretly also accept a run_id as [plan_id], and work out the plan_id
+        Can secretly also accept a run_id as [plan_id], and work out the plan_id.
+
+        Note that it's possible the plan isn't available, in which case the self.wait_for_plan()
+        method this method uses will timeout after five minutes
         """
 
         url_plan_matches = re.match('plan-.*', plan_id)
@@ -138,7 +146,7 @@ class Run():
             sys.exit(1)
 
         if response.status_code == 204:
-            plan_information = self.get_plan_information(plan_id)
+            plan_information = self.get_plan_metadata(plan_id)
             status = plan_information['data']['attributes']['status']
             print(f"The status is listed as listed as '{status}', which means we can't fetch the plan")
             sys.exit(0)
@@ -148,16 +156,21 @@ class Run():
     def wait_for_plan(self, plan_id):
         """ Wait five minutes for a plan to finish, return False on timeout or error """
 
-        status = self.get_plan_information(plan_id)['data']['attributes']['status']
+        status = self.get_plan_metadata(plan_id)['data']['attributes']['status']
         timeout = 300
         timer = 0
         while status != 'finished':
-            if status in ['errored', 'cancelled', 'unreachable'] or timer >= timeout:
-                print(f"The plan is irrecoverable, or the timeout has been reached. The last status report was: '{status}'")
-                print(f"You can try again later by quering the plan '{plan_id}'")
+            logging.debug(f"Wating for plan, current status is: {status}")
+
+            if status in ['errored', 'canceled', 'unreachable']:
+                print(f"The plan is irrecoverable. The last status report was: '{status}'")
+                return False
+            if status == 'pending' and timer >= timeout:
+                print(f"The run was successfully queued, but the timeout has been reached waiting for it to start")
+                print(f"You can try getting the plan again later by quering the plan_id: '{plan_id}'")
                 return False
 
-            status = self.get_plan_information(plan_id)['data']['attributes']['status']
+            status = self.get_plan_metadata(plan_id)['data']['attributes']['status']
             logging.info(f"Plan status is currently '{status}'. Sleeping for 10 seconds and trying again")
             timer += 10
             time.sleep(10)
@@ -173,7 +186,7 @@ class Run():
                                     f"{self.tfc_root_url}/runs/{run_id}/actions/apply",
                                     headers=headers)
         except requests.exceptions.HTTPError as e:
-            # print(f"Error starting a run in workspace {self.tfc_workspace} for configuration id {configuration_id}:\n{e}")
+            print(f"Error applying run_id {run_id}:\n{e}")
             sys.exit(1)
 
     def cancel(self, run_id, comment=None):
@@ -228,7 +241,7 @@ class Run():
                 run_id = this_run.get('id')
                 created_at = this_run.get('attributes').get('created-at')
                 status = this_run.get('attributes').get('status')
-                status_timestamp = this_run.get('attributes').get('status_timestamp')
+                status_timestamps = this_run.get('attributes').get('status-timestamps')
                 run_url = f"{self.tfc_root_url}/runs/{run_id}"
                 plan_id = this_run.get('relationships').get('plan').get('data').get('id')
                 site_url = f"https://app.terraform.io/app/{self.tfc_organisation}/workspaces/{self.tfc_workspace}/runs/{run_id}"
@@ -236,7 +249,7 @@ class Run():
                 run_output.append({'id': run_id,
                                    'created_at': created_at,
                                    'status': status,
-                                   'status_timestamp': status_timestamp,
+                                   'status_timestamp': status_timestamps,
                                    'run_url': run_url,
                                    'plan_id': plan_id,
                                    'site_url': site_url})

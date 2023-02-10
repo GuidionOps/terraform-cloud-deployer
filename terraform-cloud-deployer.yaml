@@ -26,7 +26,7 @@ commands:
       tfc_api_token:
         type: string
     steps:
-      - run: TF_TOKEN_app_terraform_io=<<parameters.tfc_api_token>> TF_WORKSPACE=<<parameters.workspace>> terraform plan
+      - run: TF_IN_AUTOMATION=true TF_TOKEN_app_terraform_io=<<parameters.tfc_api_token>> TF_WORKSPACE=<<parameters.workspace>> terraform plan
 
   tf-apply:
     description: Run terraform apply
@@ -36,7 +36,7 @@ commands:
       tfc_api_token:
         type: string
     steps:
-      - run: TF_TOKEN_app_terraform_io=<<parameters.tfc_api_token>> TF_WORKSPACE=<<parameters.workspace>> terraform apply -auto-approve
+      - run: TF_IN_AUTOMATION=true TF_TOKEN_app_terraform_io=<<parameters.tfc_api_token>> TF_WORKSPACE=<<parameters.workspace>> terraform apply -auto-approve
 
   create-configuration:
     description: Create a TFC configuration from repository contents
@@ -51,14 +51,14 @@ commands:
       - checkout
       - run: tfcd -t <<parameters.tfc_api_token>> -w <<parameters.workspace>> configuration create -c <<parameters.code_directory>> | tee configuration_id
   create-run:
-    description: Create and start a run on TFC
+    description: Create and queue a run on TFC
     parameters:
       workspace:
         type: string
       tfc_api_token:
         type: string
     steps:
-      - run: tfcd -t <<parameters.tfc_api_token>> -w <<parameters.workspace>> run start -c $(cat configuration_id) | tee run_output
+      - run: tfcd -t <<parameters.tfc_api_token>> -w <<parameters.workspace>> run queue -c $(cat configuration_id) | tee run_output
   send-message:
     description: Send messages about pending runs
     parameters:

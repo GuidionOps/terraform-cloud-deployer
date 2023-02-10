@@ -83,11 +83,11 @@ def run(ctx): # pylint: disable=unused-argument
     pass # pylint: disable=unnecessary-pass
 
 @run.command()
-@click.option('--configuration-id', '-c', help='Configuration ID to start the run for', required=True)
+@click.option('--configuration-id', '-c', help='Configuration ID to queue the run for', required=True)
 @click.option('--wait', '-w', is_flag=True, help='Whether to wait for the output of the plan (and output it)', default=False)
 @click.pass_context
-def start(ctx, configuration_id, wait):
-    """ Create and upload a Terraform Cloud configuration object """
+def queue(ctx, configuration_id, wait):
+    """ Create and upload a Terraform Cloud configuration object to the run queue """
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -97,7 +97,7 @@ def start(ctx, configuration_id, wait):
     from terraform_cloud_deployer.terraform_cloud import run as run_class
     run_object = run_class.Run(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
 
-    run_id = run_object.start(configuration_id, wait)
+    run_id = run_object.queue(configuration_id, wait)
     print(run_id)
 
 @run.command()
