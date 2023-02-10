@@ -85,15 +85,56 @@ ghcr.io/guidionops/terraform-cloud-deployer:[TAG]
 
 This repo is doubling up as the source for a Circle CI Orb called `guidionops/iac-deployer`.
 
-The orb uses this repo's [terraform-cloud-deployer](https://github.com/GuidionOps/terraform-cloud-deployer) package ([Docker image](https://github.com/GuidionOps/terraform-cloud-deployer/pkgs/container/terraform-cloud-deployer)) to piece together the tasks necessary for a complete workflow which executes runs on Terraform Cloud. See that repo for details of how this works.
+The orb provides two  uses this repo's [terraform-cloud-deployer](https://github.com/GuidionOps/terraform-cloud-deployer) package ([Docker image](https://github.com/GuidionOps/terraform-cloud-deployer/pkgs/container/terraform-cloud-deployer)) to piece together the tasks necessary for a complete workflow which executes runs on Terraform Cloud. See that repo for details of how this works.
 
-## TFCD Jobs Usage Example
+## Terraform CLI Jobs Usage Example
+
+Deploy using Terraform CLI commands:
 
 ```yaml
 version: 2.1
 
 orbs:
-  iac-deployer: guidionops/iac-deployer@dev:first
+  iac-deployer: guidionops/iac-deployer@[PICK_LATEST_TAG]
+
+workflows:
+  deploy_to_acceptance:
+    jobs:
+      - iac-deployer/plan-tf-cli:
+          type: approval
+          requires:
+            - build
+          tfc_api_token: ${ACCEPTANCE_TFC_API_TOKEN}
+          workspace: web-acceptance-circleci
+          context:
+            - global
+          filters:
+            branches:
+              only:
+                - acceptance
+      - iac-deployer/deploy-tf-cli:
+          requires:
+            - build
+            - iac-deployer/plan-tf-cli
+          tfc_api_token: ${ACCEPTANCE_TFC_API_TOKEN}
+          workspace: web-acceptance-circleci
+          context:
+            - global
+          filters:
+            branches:
+              only:
+                - acceptance
+```
+
+## TFCD Jobs Usage Example
+
+**DEPRECATION NOTICE:** Note that whilst you _can_ use this, you probably shouldn't.
+
+```yaml
+version: 2.1
+
+orbs:
+  iac-deployer: guidionops/iac-deployer@[PICK_LATEST_TAG]
 
 workflows:
   deploy_to_development:
@@ -115,33 +156,6 @@ workflows:
 ```
 
 The Terraform directory — which can be set with the flag `-t` to the `configuration create subcommand` (e.g. `tfcd -w ws-foobar configuration create -t some_directory`) — is hardcoded to `.` in this Circle CI Orb, so make sure all of your Terraform code is in the root folder.
-
-## Terraform CLI Jobs Usage Example
-
-This is the recommended orb to use
-
-```yaml
-version: 2.1
-
-orbs:
-  iac-deployer: guidionops/iac-deployer@dev:first
-
-workflows:
-  deploy_to_development:
-    jobs:
-      - iac-deployer/tf-apply:
-          tfc_api_token: $[ENVIRONMENT]_TFC_API_TOKEN
-          workspace: web-development
-          code_directory: './dist'
-          context:
-            - org-global
-            - global
-            - web-development
-          filters:
-            branches:
-              only:
-                - development
-```
 
 ## Deploying
 

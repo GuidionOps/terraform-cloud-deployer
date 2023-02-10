@@ -75,7 +75,8 @@ commands:
       - run: tfcd -t FIXME -w <<parameters.workspace>> communication send -s <<parameters.slack_channel>> -t <<parameters.slack_access_token>> --run-url $(cat run_output | jq -r .run_url)
 
 jobs:
-  # Using the Terrafomr CLI commands
+
+  # Using tfcd (API)
   deploy:
     docker:
       - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.10
@@ -105,7 +106,7 @@ jobs:
           slack_channel: <<parameters.slack_channel>>
           slack_access_token: <<parameters.slack_access_token>>
 
-  # Using tfcd (API)
+  # Using the Terrafomr CLI commands
   plan-tf-cli:
     docker:
       - image: hashicorp/terraform:1.3.7
