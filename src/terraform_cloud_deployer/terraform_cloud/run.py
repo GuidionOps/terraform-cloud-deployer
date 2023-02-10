@@ -131,8 +131,10 @@ class Run():
             response = requests.get(
                 f"{self.tfc_root_url}/plans/{plan_id}/json-output",
                 headers=headers)
+            if response.status_code == 404:
+                raise requests.exceptions.HTTPError(response.reason)
         except requests.exceptions.HTTPError as e:
-            print(f"Error getting plan:\n{e}")
+            print(f"Error getting plan: {e}")
             sys.exit(1)
 
         if response.status_code == 204:
@@ -228,6 +230,7 @@ class Run():
                 status = this_run.get('attributes').get('status')
                 status_timestamp = this_run.get('attributes').get('status_timestamp')
                 run_url = f"{self.tfc_root_url}/runs/{run_id}"
+                plan_id = this_run.get('relationships').get('plan').get('data').get('id')
                 site_url = f"https://app.terraform.io/app/{self.tfc_organisation}/workspaces/{self.tfc_workspace}/runs/{run_id}"
 
                 run_output.append({'id': run_id,
@@ -235,6 +238,7 @@ class Run():
                                    'status': status,
                                    'status_timestamp': status_timestamp,
                                    'run_url': run_url,
+                                   'plan_id': plan_id,
                                    'site_url': site_url})
 
         pprint(run_output)

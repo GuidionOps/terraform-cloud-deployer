@@ -6,14 +6,31 @@ Note that this repository doubles up both for the Python package, and the Circle
 
 If you are using Circle CI, the easiest way to get started is to use the [Orb](#usage-example), else you can use the Docker image, or even the package itself directly to create your own flows.
 
-- [Usage and Installation](#usage-and-installation)
-  - [Docker](#docker)
-  - [Deploying](#deploying)
+- [TFCD](#tfcd)
+  - [Immediate Deprecation Notice for `tfcd` :D](#immediate-deprecation-notice-for-tfcd-d)
+  - [Usage and Installation](#usage-and-installation)
+    - [Docker](#docker)
+    - [Deploying](#deploying)
 - [Circle CI 'Orb'](#circle-ci-orb)
   - [Usage Example](#usage-example)
   - [Deploying](#deploying-1)
 
-# Usage and Installation
+# TFCD
+
+## Immediate Deprecation Notice for `tfcd` :D
+
+We're not going to use TFCD, because of some strange decisions at Hashicorp around the API.
+
+The API for [fetching plans](https://developer.hashicorp.com/terraform/enterprise/api-docs/plans#retrieve-the-json-execution-plan) shows how a JSON document (descirbed [here](https://developer.hashicorp.com/terraform/internals/json-format#plan-representation)) is fetched by the that call. However, there are two oddities that make this unworkable:
+
+1. The structure of the JSON described is incorrect if you use a non-administrator token to generate the run — possibly due to ...
+1. You need [administrator privileges](https://developer.hashicorp.com/terraform/enterprise/api-docs/plans#retrieve-the-json-execution-plan) to fetch the plan:
+
+> Note: This endpoint cannot be accessed with organization tokens. You must access it with a user token or team token that has admin level access to the workspace. (More about permissions.)
+
+We'll keep this tool around though, because it has other uses, and I'm going to follow up on what the idea behind these decisions is with Hashicorp.
+
+## Usage and Installation
 
 For now, you clone this repo and run `pip install .`
 
@@ -40,7 +57,7 @@ A new command which does both may be added in future, but it's a two step proces
 tfcd -w data-development configuration create | xargs tfcd -w data-development run start -c
 ```
 
-## Docker
+### Docker
 
 A convenience image for use with CI/CD tools such as Gitlab and Circle CI is available here:
 
@@ -59,7 +76,7 @@ image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.2
 command: -w data-development run list
 ```
 
-## Deploying
+### Deploying
 
 Simply push a new tag, and Github Actions will create a new Docker tag here:
 
@@ -73,7 +90,7 @@ This repo is doubling up as the source for a Circle CI Orb called `guidionops/ia
 
 The orb uses this repo's [terraform-cloud-deployer](https://github.com/GuidionOps/terraform-cloud-deployer) package ([Docker image](https://github.com/GuidionOps/terraform-cloud-deployer/pkgs/container/terraform-cloud-deployer)) to piece together the tasks necessary for a complete workflow which executes runs on Terraform Cloud. See that repo for details of how this works.
 
-## Usage Example
+## TFCD Jobs Usage Example
 
 ```yaml
 version: 2.1
@@ -101,6 +118,33 @@ workflows:
 ```
 
 The Terraform directory — which can be set with the flag `-t` to the `configuration create subcommand` (e.g. `tfcd -w ws-foobar configuration create -t some_directory`) — is hardcoded to `.` in this Circle CI Orb, so make sure all of your Terraform code is in the root folder.
+
+## Terraform CLI Jobs Usage Example
+
+This is the recommended orb to use
+
+```yaml
+version: 2.1
+
+orbs:
+  iac-deployer: guidionops/iac-deployer@dev:first
+
+workflows:
+  deploy_to_development:
+    jobs:
+      - iac-deployer/tf-apply:
+          tfc_api_token: $[ENVIRONMENT]_TFC_API_TOKEN
+          workspace: web-development
+          code_directory: './dist'
+          context:
+            - org-global
+            - global
+            - web-development
+          filters:
+            branches:
+              only:
+                - development
+```
 
 ## Deploying
 

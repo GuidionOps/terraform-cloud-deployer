@@ -60,7 +60,7 @@ def download(ctx, configuration_id):
 
 @configuration.command()
 @click.option('--terraform-directory', '-t', help='Where the Terraform files can be found', default='.')
-@click.option('--code-directory', '-c', help='Where the application code can be found', default='lambdas')
+@click.option('--code-directory', '-c', help='Where the application code can be found', required=True)
 @click.pass_context
 def create(ctx, terraform_directory, code_directory):
     """ Create and upload a Terraform Cloud configuration object """
@@ -104,7 +104,7 @@ def start(ctx, configuration_id, wait):
 @click.argument('plan_id')
 @click.pass_context
 def show_plan(ctx, plan_id):
-    """ Get and print [plan_id] """
+    """ Get and print [plan_id] WARNING: Only works with admin generated runs """
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
