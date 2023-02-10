@@ -26,7 +26,9 @@ commands:
       tfc_api_token:
         type: string
     steps:
-      - run: TF_IN_AUTOMATION=true TF_TOKEN_app_terraform_io=<<parameters.tfc_api_token>> TF_WORKSPACE=<<parameters.workspace>> terraform plan
+      - run: |
+          TF_IN_AUTOMATION=true TF_TOKEN_app_terraform_io=<<parameters.tfc_api_token>> TF_WORKSPACE=<<parameters.workspace>> terraform plan
+          echo "WARNING: This is a speculative plan. It may not reflect what you see when running terraform apply"
 
   tf-apply:
     description: Run terraform apply
