@@ -12,7 +12,8 @@ If you are using Circle CI, the easiest way to get started is to use the [Orb](#
     - [Docker](#docker)
     - [Deploying](#deploying)
 - [Circle CI 'Orb'](#circle-ci-orb)
-  - [Usage Example](#usage-example)
+  - [Terraform CLI Jobs Usage Example](#terraform-cli-jobs-usage-example)
+  - [TFCD Jobs Usage Example](#tfcd-jobs-usage-example)
   - [Deploying](#deploying-1)
 
 # TFCD
@@ -86,6 +87,8 @@ ghcr.io/guidionops/terraform-cloud-deployer:[TAG]
 This repo is doubling up as the source for a Circle CI Orb called `guidionops/iac-deployer`.
 
 The orb provides two  uses this repo's [terraform-cloud-deployer](https://github.com/GuidionOps/terraform-cloud-deployer) package ([Docker image](https://github.com/GuidionOps/terraform-cloud-deployer/pkgs/container/terraform-cloud-deployer)) to piece together the tasks necessary for a complete workflow which executes runs on Terraform Cloud. See that repo for details of how this works.
+
+For a complete reference see the [orb page](https://circleci.com/developer/orbs/orb/guidionops/iac-deployer).
 
 ## Terraform CLI Jobs Usage Example
 

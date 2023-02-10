@@ -78,6 +78,7 @@ jobs:
 
   # Using tfcd (API)
   deploy:
+    description: Use the Terraform Cloud API to queue a run
     docker:
       - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.10
     parameters:
@@ -108,6 +109,7 @@ jobs:
 
   # Using the Terrafomr CLI commands
   plan-tf-cli:
+    description: 'Return a speculative Terraform plan'
     docker:
       - image: hashicorp/terraform:1.3.7
     parameters:
@@ -126,6 +128,7 @@ jobs:
           workspace: <<parameters.workspace>>
 
   deploy-tf-cli:
+    description: 'Queue a Terraform run without asking for approval'
     docker:
       - image: hashicorp/terraform:1.3.7
     parameters:
