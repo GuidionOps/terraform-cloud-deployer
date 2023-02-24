@@ -27,10 +27,10 @@ def main(ctx, tfc_organisation, tfc_api_token, tfc_workspace):
     """
 
     try:
-        tfc_api_token = tfc_api_token or os.environ['TERRAFORM_CLOUD_API_TOKEN']
+        tfc_api_token = tfc_api_token or os.environ['TF_TOKEN_app_terraform_io']
         tfc_root_url = "https://app.terraform.io/api/v2"
     except KeyError:
-        print("Please ensure that either the environment variable TERRAFORM_CLOUD_API_TOKEN is set, or you pass it in with the -t flag")
+        print("Please ensure that either the environment variable TF_TOKEN_app_terraform_io is set, or you pass it in with the -t flag")
         sys.exit(1)
 
     ctx.obj = {
