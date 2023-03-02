@@ -18,16 +18,6 @@ If you are using Circle CI, the easiest way to get started is to use the [Orb](#
 
 # TFCD
 
-## Immediate Deprecation Notice for `tfcd` :D
-
-We're not going to use TFCD, because of some strange decisions at Hashicorp around the API.
-
-The API for [fetching plans](https://developer.hashicorp.com/terraform/enterprise/api-docs/plans#retrieve-the-json-execution-plan) shows how a JSON document (described [here](https://developer.hashicorp.com/terraform/internals/json-format#plan-representation)) is fetched by the that call. However, you need [administrator privileges](https://developer.hashicorp.com/terraform/enterprise/api-docs/plans#retrieve-the-json-execution-plan) to fetch the plan:
-
-> Note: This endpoint cannot be accessed with organization tokens. You must access it with a user token or team token that has admin level access to the workspace. (More about permissions.)
-
-We'll keep this tool around though, because it has other uses, and I'm going to follow up on what the idea behind these decisions is with Hashicorp.
-
 ## Usage and Installation
 
 For now, you clone this repo and run `pip install .`
