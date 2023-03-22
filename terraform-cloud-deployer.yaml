@@ -93,7 +93,7 @@ jobs:
   deploy:
     description: Use the Terraform Cloud API to queue a run
     docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.13
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.14
     parameters:
       tfc_api_token:
         type: string
@@ -124,7 +124,7 @@ jobs:
   plan-tf-cli:
     description: "Return a speculative Terraform plan"
     docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.13
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.14
     parameters:
       tfc_api_token:
         type: string
