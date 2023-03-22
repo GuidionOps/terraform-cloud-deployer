@@ -31,8 +31,6 @@ commands:
           echo "WARNING: This is a speculative plan. It may not reflect what you see when running terraform apply"
 
   approve-plan:
-    docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.12
     description: "Please check the speculative plan in the previous step"
     parameters:
       workspace:
@@ -95,7 +93,7 @@ jobs:
   deploy:
     description: Use the Terraform Cloud API to queue a run
     docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.10
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.13
     parameters:
       tfc_api_token:
         type: string
@@ -126,7 +124,7 @@ jobs:
   plan-tf-cli:
     description: "Return a speculative Terraform plan"
     docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.12
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.13
     parameters:
       tfc_api_token:
         type: string

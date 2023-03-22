@@ -19,12 +19,12 @@ class Communication():
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "A deploy is waiting in production"},
+                "text": "A deploy is waiting in acceptance or production"},
                 "accessory": {
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": "Go to Terraform Cloud Run",
+                        "text": "Go to the Circle CI Job",
                         "emoji": True
                     },
                     "value": "click_me_123",
