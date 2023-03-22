@@ -30,6 +30,22 @@ commands:
           TF_IN_AUTOMATION=true TF_TOKEN_app_terraform_io=<<parameters.tfc_api_token>> TF_WORKSPACE=<<parameters.workspace>> terraform plan
           echo "WARNING: This is a speculative plan. It may not reflect what you see when running terraform apply"
 
+  approve-plan:
+    docker:
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.12
+    description: "Please check the speculative plan in the previous step"
+    parameters:
+      workspace:
+        type: string
+      slack_channel:
+        type: string
+      slack_access_token:
+        type: string
+      ci_url:
+        type: string
+    steps:
+      - run: tfcd -t FIXME -w <<parameters.workspace>> communication send -s <<parameters.slack_channel>> -t <<parameters.slack_access_token>> --run-url <<parameters.ci_url>>
+
   tf-apply:
     description: Run terraform apply
     parameters:
@@ -110,11 +126,17 @@ jobs:
   plan-tf-cli:
     description: "Return a speculative Terraform plan"
     docker:
-      - image: hashicorp/terraform:1.3.7
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.12
     parameters:
       tfc_api_token:
         type: string
       workspace:
+        type: string
+      slack_channel:
+        type: string
+      slack_access_token:
+        type: string
+      ci_url:
         type: string
     steps:
       - attach_workspace:
@@ -125,6 +147,11 @@ jobs:
       - tf-plan:
           tfc_api_token: <<parameters.tfc_api_token>>
           workspace: <<parameters.workspace>>
+      - approve-plan:
+          workspace: <<parameters.workspace>>
+          slack_channel: <<parameters.slack_channel>>
+          slack_access_token: <<parameters.slack_access_token>>
+          ci_url: <<parameters.ci_url>>
 
   deploy-tf-cli:
     description: "Queue a Terraform run without asking for approval"
