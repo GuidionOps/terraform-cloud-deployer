@@ -93,22 +93,37 @@ orbs:
 workflows:
   deploy_to_acceptance:
     jobs:
-      - iac-deployer/plan-tf-cli:
-          type: approval
+      - test:
+          context:
+            - semantic-release-npm
           requires:
             - build
+          filters:
+            branches:
+              only:
+                - acceptance
+      - iac-deployer/plan-tf-cli:
+          requires:
+            - test
           tfc_api_token: ${ACCEPTANCE_TFC_API_TOKEN}
           workspace: web-acceptance-circleci
+          slack_channel: "production-deploys"
+          slack_access_token: ${SLACK_ACCESS_TOKEN}
+          ci_url: ${CIRCLE_BUILD_URL}
           context:
             - global
           filters:
             branches:
               only:
                 - acceptance
+      - approve-plan:
+          description: "Please check the speculative plan in the previous step"
+          requires:
+            - iac-deployer/plan-tf-cli
+          type: approval
       - iac-deployer/deploy-tf-cli:
           requires:
-            - build
-            - iac-deployer/plan-tf-cli
+            - approve-plan
           tfc_api_token: ${ACCEPTANCE_TFC_API_TOKEN}
           workspace: web-acceptance-circleci
           context:
