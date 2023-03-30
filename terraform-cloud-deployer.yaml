@@ -109,7 +109,7 @@ jobs:
   cancel:
     description: Cancel the current run
     docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.15.1
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.15
     parameters:
       tfc_api_token:
         type: string
