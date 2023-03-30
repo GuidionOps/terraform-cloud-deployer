@@ -189,7 +189,7 @@ class Run():
             print(f"Error applying run_id {run_id}:\n{e}")
             sys.exit(1)
 
-    def cancel(self, run_id, comment=None):
+    def cancel(self, run_id, auto_approve, force, comment=None):
         """
         Cancel _or_ discard the run [run_id]
 
@@ -199,25 +199,94 @@ class Run():
 
         https://developer.hashicorp.com/terraform/cloud-docs/api-docs/run#cancel-a-run
         https://developer.hashicorp.com/terraform/cloud-docs/api-docs/run#discard-a-run
+
+        The possible states detailed here will be checked before the operation proceeds:
+
+        https://developer.hashicorp.com/terraform/cloud-docs/api-docs/run#run-states
         """
+
+        if run_id == 'current':
+            run = self.get_current()
+            if not auto_approve:
+                confirmation = input(f"The status of '{run['run_id']}' is '{run['status']}'. Would you like to cancel it (only 'yes' will be accepted as an affirmative)? ")
+                if confirmation != 'yes':
+                    print("'yes' was not received, so cancelling the cancelling :)")
+                    return
+
+            run_id = run['run_id']
+
 
         comment = comment or '{"comment": "Cancelled by the tfcd cancel command"}'
         headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
+
+        print(f"Run '{run_id}' will be cancelled")
+        run_info = self.get_run(run_id)
+        if run_info['status'] in ['confirmed',
+                                  'post_plan_running',
+                                  'post_plan_completed',
+                                  'apply_queued',
+                                  'applying']:
+            print(f"The run is a post-plan stage: '{run_info['status']}'. It is dangerous to proceed. Use '--force' to do it anyway")
+            if force:
+                print("Proceeding anyway, since '--force' was used")
+            else:
+                sys.exit(0)
 
         try:
             requests.post(
                           f"{self.tfc_root_url}/runs/{run_id}/actions/cancel",
                           headers=headers,
                           data=comment)
+            print('Cancelled the run, moving on to discarding ...')
             requests.post(
                           f"{self.tfc_root_url}/runs/{run_id}/actions/discard",
                           headers=headers,
                           data=comment)
+            print('Discarded the run')
         except Exception as e:
             print(f"Could not cancel run {run_id}: {e}")
 
+    def get_run(self, run_id):
+        """ Return information on <run_id> """
+
+        headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
+
+        try:
+            response = requests.get(
+                 f"{self.tfc_root_url}/runs/{run_id}",
+                 headers=headers)
+
+            run_info = {
+                'run_id': response.json().get('data')['id'],
+                'status': response.json().get('data').get('attributes').get('status')
+            }
+        except Exception as e:
+            print(f"Something went wrong whilst trying to fetch information on run '{run_id}':\n{e}")
+            sys.exit(1)
+
+        return run_info
+
+    def get_current(self):
+        """ Return information on the current or last run """
+
+        headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
+
+        try:
+            response = requests.get(
+                 f"{self.tfc_root_url}/workspaces/{self.workspace_id}/runs",
+                 headers=headers)
+
+            run_info = {
+                'run_id': response.json().get('data')[0]['id'],
+                'status': response.json().get('data')[0].get('attributes').get('status')
+            }
+        except Exception as e:
+            print(f"Something went wrong whilst trying to find the latest run:\n{e}")
+
+        return run_info
+
     def list(self, full_output, filters):
-        """ List runs for [self.workspace_id] """
+        """ List runs for <self.workspace_id> """
 
         headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
 

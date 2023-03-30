@@ -11,9 +11,9 @@ def configuration(ctx): # pylint: disable=unused-argument
     """ Commands for handling configuration versions and runs for Terraform Cloud """
     pass # pylint: disable=unnecessary-pass
 
-@configuration.command()
+@configuration.command(name='list')
 @click.pass_context
-def list(ctx):
+def list_configurations(ctx):
     """ List configuration versions for this workspace """
 
     tfc_api_token = ctx.obj['tfc_api_token']
@@ -104,7 +104,7 @@ def queue(ctx, configuration_id, wait):
 @click.argument('plan_id')
 @click.pass_context
 def show_plan(ctx, plan_id):
-    """ Get and print [plan_id] WARNING: Only works with admin generated runs """
+    """ Get and print <plan_id> WARNING: Only works with admin generated runs """
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -137,9 +137,12 @@ def apply(ctx, run_id, comment):
 
 @run.command()
 @click.argument('run-id', required=True)
+@click.option('--auto-approve', '-a', is_flag=True, default=False, help='If used, will not ask for approval')
+@click.option('--comment', '-c', help='Optional comment to add to the cancellaton call')
+@click.option('--force', '-f', is_flag=True, default=False, help="Force cancel a run, whether it's currently running or not")
 @click.pass_context
-def cancel(ctx, run_id):
-    """ Cancel [run_id]. Use with caution on scheduled runs """
+def cancel(ctx, run_id, auto_approve, force, comment):
+    """ Cancel <run_id> or 'current' for latest run — use with caution on scheduled runs """
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -149,14 +152,14 @@ def cancel(ctx, run_id):
     from terraform_cloud_deployer.terraform_cloud import run as run_class
     run_object = run_class.Run(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
 
-    run_object.cancel(run_id)
+    run_object.cancel(run_id, auto_approve=auto_approve, force=force, comment=comment)
 
 @run.command(name='list')
 @click.option('--full-output', '-o', help='Whether or not to print the full JSON output', is_flag=True, default=False)
 @click.option('--filters', '-f', help='[status|user|page|operation|source|search]=values. Invalid filters are ignored', multiple=True)
 @click.pass_context
 def list_runs(ctx, full_output, filters):
-    """ List runs in [workspace_id] """
+    """ List runs in <workspace_id> """
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
