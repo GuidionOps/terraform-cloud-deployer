@@ -7,6 +7,8 @@ description: Use terraform-cloud-deployer to create a run on Terraform Cloud
 # https://circleci.com/docs/configuration-reference/
 
 commands:
+  # Terraform CLI Commands
+
   tf-init:
     description: Run terraform plan
     parameters:
@@ -54,6 +56,8 @@ commands:
     steps:
       - run: TF_IN_AUTOMATION=true TF_TOKEN_app_terraform_io=<<parameters.tfc_api_token>> TF_WORKSPACE=<<parameters.workspace>> terraform apply -auto-approve
 
+  # TFCD Commands
+
   create-configuration:
     description: Create a TFC configuration from repository contents
     parameters:
@@ -66,6 +70,7 @@ commands:
     steps:
       - checkout
       - run: tfcd -t <<parameters.tfc_api_token>> -w <<parameters.workspace>> configuration create -c <<parameters.code_directory>> | tee configuration_id
+
   create-run:
     description: Create and queue a run on TFC
     parameters:
@@ -75,6 +80,17 @@ commands:
         type: string
     steps:
       - run: tfcd -t <<parameters.tfc_api_token>> -w <<parameters.workspace>> run queue -c $(cat configuration_id) | tee run_output
+
+  cancel:
+    description: Cancel the current run
+    parameters:
+      workspace:
+        type: string
+      tfc_api_token:
+        type: string
+    steps:
+      - run: tfcd -t <<parameters.tfc_api_token>> -w <<parameters.workspace>> run cancel --auto-approve current
+
   send-message:
     description: Send messages about pending runs
     parameters:
@@ -90,10 +106,24 @@ commands:
 
 jobs:
   # Using tfcd (API)
+  cancel:
+    description: Cancel the current run
+    docker:
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.15.1
+    parameters:
+      tfc_api_token:
+        type: string
+      workspace:
+        type: string
+    steps:
+      - cancel:
+          tfc_api_token: <<parameters.tfc_api_token>>
+          workspace: <<parameters.workspace>>
+
   deploy:
     description: Use the Terraform Cloud API to queue a run
     docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.14
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.15
     parameters:
       tfc_api_token:
         type: string
@@ -124,7 +154,7 @@ jobs:
   plan-tf-cli:
     description: "Return a speculative Terraform plan"
     docker:
-      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.14
+      - image: ghcr.io/guidionops/terraform-cloud-deployer:0.0.15
     parameters:
       tfc_api_token:
         type: string
