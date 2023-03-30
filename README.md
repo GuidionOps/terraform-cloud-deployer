@@ -7,8 +7,9 @@ Note that this repository doubles up both for the Python package, and the Circle
 If you are using Circle CI, the easiest way to get started is to use the [Orb](#usage-example), else you can use the Docker image, or even the package itself directly to create your own flows.
 
 - [TFCD](#tfcd)
-  - [Immediate Deprecation Notice for `tfcd` :D](#immediate-deprecation-notice-for-tfcd-d)
   - [Usage and Installation](#usage-and-installation)
+    - [Cancelling Runs](#cancelling-runs)
+    - [Deploying Using tfcd](#deploying-using-tfcd)
     - [Docker](#docker)
     - [Deploying](#deploying)
 - [Circle CI 'Orb'](#circle-ci-orb)
@@ -23,6 +24,35 @@ If you are using Circle CI, the easiest way to get started is to use the [Orb](#
 For now, you clone this repo and run `pip install .`
 
 Runs are performed in two steps; building and uploading the configuration to Terraform Cloud, and starting a new run from that configuration. The TFC Configuration API is described [here](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/configuration-versions), and the run API [here](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/run).
+
+### Cancelling Runs
+
+Cancel the current run:
+
+```shell
+tfcd -w <WORKSPACE_NAME> run cancel current
+```
+
+Some sanity checks will be performed before the cancellation, as well as a request for confirmation. You can ignore both with:
+
+```shell
+tfcd -w <WORKSPACE_NAME> run cancel current --auto-approve --force
+```
+
+Find and cancel a particular run:
+
+```shell
+# Find all runs with the status of 'planned' (run --help
+# on list to get all possible filters):
+tfcd -w <WORKSPACE_NAME> run list -f status=planned
+
+# Cancel it
+tfcd -w <WORKSPACE_NAME> run cancel <RUN_ID_FROM_ABOVE>
+```
+
+### Deploying Using tfcd
+
+This is kept here for historical purposes, and is not the way we deploy Terraform.
 
 The TL;DR is:
 
