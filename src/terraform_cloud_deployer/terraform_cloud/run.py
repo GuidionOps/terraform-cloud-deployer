@@ -280,6 +280,9 @@ class Run():
                 'run_id': response.json().get('data')[0]['id'],
                 'status': response.json().get('data')[0].get('attributes').get('status')
             }
+        except IndexError as e:
+            print("TFC knows nothing about this workspace's runs. Unless this this is the very first run, it's likely something's wrong, and you should proceed with caution")
+            sys.exit(0)
         except Exception as e:
             print(f"Something went wrong whilst trying to find the latest run:\n{e}")
 
