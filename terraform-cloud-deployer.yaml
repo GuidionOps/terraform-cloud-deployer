@@ -184,7 +184,7 @@ jobs:
   deploy-tf-cli:
     description: "Queue a Terraform run without asking for approval"
     docker:
-      - image: hashicorp/terraform:1.3.7
+      - image: hashicorp/terraform:1.6.1
     parameters:
       tfc_api_token:
         type: string
