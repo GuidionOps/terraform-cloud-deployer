@@ -1,0 +1,196 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "api-app-x",
+    "version": "2023-09-29T14:58:55Z"
+  },
+  "servers": [
+    {
+      "url": "https://api-app-x.constr.dev.guidion.io"
+    }
+  ],
+  "paths": {
+    "/with-dynamo": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "table-name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bar",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "foodoo": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "httpMethod": "POST",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:656126335349:function:api-app-x-with-dynamo/invocations",
+          "passthroughBehavior": "when_no_match",
+          "type": "aws_proxy"
+        }
+      }
+    },
+    "/with-sqs": {
+      "get": {
+        "parameters": [
+          {
+            "name": "queue-name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "api_key": []
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "httpMethod": "POST",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:656126335349:function:api-app-x-with-sqs/invocations",
+          "passthroughBehavior": "when_no_match",
+          "type": "aws_proxy"
+        }
+      }
+    },
+    "/without-vpc/{foo}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "beepboop",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "foo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "api_key": []
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "httpMethod": "POST",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:656126335349:function:api-app-x-path-parameter/invocations",
+          "passthroughBehavior": "when_no_match",
+          "type": "aws_proxy"
+        }
+      }
+    },
+    "/with-vpc": {
+      "get": {
+        "security": [
+          {
+            "api_key": []
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "httpMethod": "POST",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:656126335349:function:api-app-x-with-vpc-get/invocations",
+          "passthroughBehavior": "when_no_match",
+          "type": "aws_proxy"
+        }
+      }
+    },
+    "/without-vpc": {
+      "get": {
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {}
+        ],
+        "x-amazon-apigateway-integration": {
+          "httpMethod": "POST",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:656126335349:function:api-app-x-without-vpc-get/invocations",
+          "passthroughBehavior": "when_no_match",
+          "type": "aws_proxy"
+        }
+      },
+      "put": {
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "api_key": []
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "httpMethod": "POST",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:656126335349:function:api-app-x-without-vpc-put/invocations",
+          "passthroughBehavior": "when_no_match",
+          "type": "aws_proxy"
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "foodoo": {
+        "type": "apiKey",
+        "name": "Authorizer",
+        "in": "header",
+        "x-amazon-apigateway-authtype": "cognito_user_pools",
+        "x-amazon-apigateway-authorizer": {
+          "providerARNs": [
+            "arn:aws:cognito-idp:eu-central-1:656126335349:userpool/eu-central-1_eGrunq2o6"
+          ],
+          "type": "cognito_user_pools"
+        }
+      },
+      "api_key": {
+        "type": "apiKey",
+        "name": "x-api-key",
+        "in": "header"
+      }
+    }
+  }
+}
