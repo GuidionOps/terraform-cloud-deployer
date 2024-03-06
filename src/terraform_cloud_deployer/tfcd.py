@@ -42,7 +42,9 @@ def main(ctx, tfc_organisation, tfc_api_token, tfc_workspace):
 
 from terraform_cloud_deployer.terraform_cloud.commands import configuration as configuration_commands
 from terraform_cloud_deployer.terraform_cloud.commands import run as run_commands
+from terraform_cloud_deployer.terraform_cloud.commands import workspace as workspace_commands
 from terraform_cloud_deployer.communication.commands import communication as communication_commands
 main.add_command(configuration_commands)
 main.add_command(run_commands)
+main.add_command(workspace_commands)
 main.add_command(communication_commands)

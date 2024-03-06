@@ -4,6 +4,7 @@ Commands for handling configuration versions and runs in Terraform Cloud
 
 import click
 import re
+from pprint import pprint
 
 @click.group
 @click.pass_context
@@ -202,3 +203,42 @@ def format_filters(arguments):
             formatted_arguments[formatted_argument[split_argument[0]]] = split_argument[1]
 
     return formatted_arguments
+
+@click.group
+@click.pass_context
+def workspace(ctx): # pylint: disable=unused-argument
+    """ Commands for manipulating workspaces """
+    pass # pylint: disable=unnecessary-pass
+
+@workspace.command()
+@click.pass_context
+@click.option('--version', '-v', help='Run version to fetch state for')
+def list_states(ctx, version):
+    """ List the most recent statefiles available """
+
+    tfc_api_token = ctx.obj['tfc_api_token']
+    tfc_organisation = ctx.obj['tfc_organisation']
+    tfc_workspace = ctx.obj['tfc_workspace']
+    tfc_root_url = ctx.obj['tfc_root_url']
+
+    from terraform_cloud_deployer.terraform_cloud import workspace as workspace_class
+    workspace_object = workspace_class.Workspace(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
+
+    state_files = workspace_object.list_states(version)
+    pprint(state_files)
+
+@workspace.command()
+@click.pass_context
+@click.option('--version', '-v', help='Run version to fetch state for')
+def get_state(ctx, version):
+    """ Fetch the latest (by default) statefile for this workspace """
+
+    tfc_api_token = ctx.obj['tfc_api_token']
+    tfc_organisation = ctx.obj['tfc_organisation']
+    tfc_workspace = ctx.obj['tfc_workspace']
+    tfc_root_url = ctx.obj['tfc_root_url']
+
+    from terraform_cloud_deployer.terraform_cloud import workspace as workspace_class
+    workspace_object = workspace_class.Workspace(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
+
+    state_file = workspace_object.get_state(version)
