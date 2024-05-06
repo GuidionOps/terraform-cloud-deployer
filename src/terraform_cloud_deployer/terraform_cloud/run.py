@@ -15,11 +15,11 @@ import logging
 class Run():
     """ Methods for creating and interacting with Terraform Cloud runs """
 
-    def __init__(self, tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace):
+    def __init__(self, tfc_api_token, tfc_root_url, tfc_organisation):
+        # TODO This needs to be do the same override dance for tfc_workspace
         self.tfc_api_token = tfc_api_token
         self.tfc_root_url = tfc_root_url
         self.tfc_organisation = tfc_organisation
-        self.tfc_workspace = tfc_workspace
 
         headers = {'Authorization': f"Bearer {self.tfc_api_token}", 'Content-Type': 'application/vnd.api+json'}
         try:
