@@ -57,7 +57,12 @@ class Workspace():
             sys.exit(1)
 
         response_json = response.json()
-        state_ids = [ {this_item['attributes']['created-at']: this_item['id']} for this_item in response_json['data'] ]
+        try:
+            state_ids = [ {this_item['attributes']['created-at']: this_item['id']} for this_item in response_json['data'] ]
+        except KeyError:
+            print(f"There was a problem getting a listing of statefiles for the workspace '{tfc_workspace}'. Are there any states to fetch?")
+            sys.exit(1)
+
 
         return state_ids
 
@@ -92,7 +97,11 @@ class Workspace():
             sys.exit(1)
 
         response_json = response.json()
-        state_download_url = response_json['data']['attributes']['hosted-state-download-url']
+        try:
+            state_download_url = response_json['data']['attributes']['hosted-state-download-url']
+        except KeyError:
+            print(f"There was a problem getting the statefile for the workspace '{tfc_workspace}'. Are there any states to fetch?")
+            sys.exit(1)
         state_file = requests.get(state_download_url, headers=headers)
         with open('downloaded-terraform.tfstate', 'w') as state_file_io:
             state_file_io.write(json.dumps(state_file.json(), indent=2))

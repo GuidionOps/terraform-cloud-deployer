@@ -15,8 +15,8 @@ import logging
 class Run():
     """ Methods for creating and interacting with Terraform Cloud runs """
 
-    def __init__(self, tfc_api_token, tfc_root_url, tfc_organisation):
-        # TODO This needs to be do the same override dance for tfc_workspace
+    def __init__(self, tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace):
+        self.tfc_workspace = tfc_workspace
         self.tfc_api_token = tfc_api_token
         self.tfc_root_url = tfc_root_url
         self.tfc_organisation = tfc_organisation
@@ -335,12 +335,15 @@ def parse_plan(plan_json):
 
     parsed_output = {}
 
-    for this_change in plan_json['resource_changes']:
+    try:
+        for this_change in plan_json['resource_changes']:
 
-        parsed_output[this_change['address']] = {
-            'change_types': this_change['change']['actions'],
-            'change_before': this_change['change']['before'],
-            'change_after': this_change['change']['after']
-        }
+            parsed_output[this_change['address']] = {
+                'change_types': this_change['change']['actions'],
+                'change_before': this_change['change']['before'],
+                'change_after': this_change['change']['after']
+            }
+    except KeyError:
+        print(f"Trouble parsing the plan. Are you sure it ran? The 'applyable' field was marked as '{plan_json['applyable']}'")
 
     return parsed_output
