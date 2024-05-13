@@ -21,7 +21,7 @@ _logger = logging.getLogger(__name__)
 @click.pass_context
 @click.option("--tfc-organisation", '-o', default='guidion', help='Terraform Cloud organisation name')
 @click.option("--tfc-api-token", '-t', help='Terraform Cloud API token')
-@click.option("--tfc-workspace", '-w', help='Terraform Cloud workspace name', required=True)
+@click.option("--tfc-workspace", '-w', help='DEPRECATED: Please use the -w option in the sub-commands', required=False)
 def main(ctx, tfc_organisation, tfc_api_token, tfc_workspace):
     """
     Helper package for performing Terraform CI/CD operations. Also talks a bit to Slack ;)

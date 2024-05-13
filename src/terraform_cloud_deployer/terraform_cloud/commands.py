@@ -5,6 +5,7 @@ Commands for handling configuration versions and runs in Terraform Cloud
 import click
 import re
 from pprint import pprint
+import sys
 
 @click.group
 @click.pass_context
@@ -14,8 +15,11 @@ def configuration(ctx): # pylint: disable=unused-argument
 
 @configuration.command(name='list')
 @click.pass_context
-def list_configurations(ctx):
+@click.option('--tfc-workspace', '-w', help='Workspace name to operate on', required=False)
+def list_configurations(ctx, tfc_workspace):
     """ List configuration versions for this workspace """
+
+    ctx = workspace_deprecation_hack(ctx, tfc_workspace)
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -28,10 +32,13 @@ def list_configurations(ctx):
     configuration_object.list()
 
 @configuration.command()
+@click.option('--tfc-workspace', '-w', help='Workspace name to operate on', required=False)
 @click.argument("configuration-id")
 @click.pass_context
-def show(ctx, configuration_id):
+def show(ctx, tfc_workspace, configuration_id):
     """ Show some formatted and pre-selected information about a configuration version """
+
+    ctx = workspace_deprecation_hack(ctx, tfc_workspace)
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -44,10 +51,13 @@ def show(ctx, configuration_id):
     configuration_object.show(configuration_id)
 
 @configuration.command()
+@click.option('--tfc-workspace', '-w', help='Workspace name to operate on', required=False)
 @click.argument("configuration-id")
 @click.pass_context
-def download(ctx, configuration_id):
+def download(ctx, tfc_workspace, configuration_id):
     """ Download the configuration package for [configuration-id] """
+
+    ctx = workspace_deprecation_hack(ctx, tfc_workspace)
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -60,11 +70,14 @@ def download(ctx, configuration_id):
     configuration_object.download(configuration_id)
 
 @configuration.command()
+@click.option('--tfc-workspace', '-w', help='Workspace name to operate on', required=False)
 @click.option('--terraform-directory', '-t', help='Where the Terraform files can be found', default='.')
 @click.option('--code-directory', '-c', help='Where the application code can be found', required=True)
 @click.pass_context
-def create(ctx, terraform_directory, code_directory):
+def create(ctx, tfc_workspace, terraform_directory, code_directory):
     """ Create and upload a Terraform Cloud configuration object """
+
+    ctx = workspace_deprecation_hack(ctx, tfc_workspace)
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -84,11 +97,14 @@ def run(ctx): # pylint: disable=unused-argument
     pass # pylint: disable=unnecessary-pass
 
 @run.command()
+@click.option('--tfc-workspace', help='Workspace name to operate on', required=False)
 @click.option('--configuration-id', '-c', help='Configuration ID to queue the run for', required=True)
 @click.option('--wait', '-w', is_flag=True, help='Whether to wait for the output of the plan (and output it)', default=False)
 @click.pass_context
-def queue(ctx, configuration_id, wait):
-    """ Create and upload a Terraform Cloud configuration object to the run queue """
+def queue(ctx, tfc_workspace, configuration_id, wait):
+    """ Add <configuration_id> (configuration version) to the run queue """
+
+    ctx = workspace_deprecation_hack(ctx, tfc_workspace)
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -102,10 +118,13 @@ def queue(ctx, configuration_id, wait):
     print(run_id)
 
 @run.command()
+@click.option('--tfc-workspace', '-w', help='Workspace name to operate on', required=False)
 @click.argument('plan_id')
 @click.pass_context
-def show_plan(ctx, plan_id):
+def show_plan(ctx, tfc_workspace, plan_id):
     """ Get and print <plan_id> WARNING: Only works with admin generated runs """
+
+    ctx = workspace_deprecation_hack(ctx, tfc_workspace)
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -120,10 +139,13 @@ def show_plan(ctx, plan_id):
     pprint(output)
 
 @run.command()
+@click.option('--tfc-workspace', '-w', help='Workspace name to operate on', required=False)
 @click.option('--comment', '-m', help='Optional comment on why this is happening', default=None)
 @click.pass_context
-def apply(ctx, run_id, comment):
+def apply(ctx, tfc_workspace, run_id, comment):
     """ Try to apply a plan """
+
+    ctx = workspace_deprecation_hack(ctx, tfc_workspace)
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -137,13 +159,16 @@ def apply(ctx, run_id, comment):
     # print(output)
 
 @run.command()
+@click.option('--tfc-workspace', '-w', help='Workspace name to operate on', required=False)
 @click.argument('run-id', required=True)
 @click.option('--auto-approve', '-a', is_flag=True, default=False, help='If used, will not ask for approval')
 @click.option('--comment', '-c', help='Optional comment to add to the cancellaton call')
 @click.option('--force', '-f', is_flag=True, default=False, help="Force cancel a run, whether it's currently running or not")
 @click.pass_context
-def cancel(ctx, run_id, auto_approve, force, comment):
+def cancel(ctx, tfc_workspace, run_id, auto_approve, force, comment):
     """ Cancel <run_id> or 'current' for latest run — use with caution on scheduled runs """
+
+    ctx = workspace_deprecation_hack(ctx, tfc_workspace)
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -156,11 +181,14 @@ def cancel(ctx, run_id, auto_approve, force, comment):
     run_object.cancel(run_id, auto_approve=auto_approve, force=force, comment=comment)
 
 @run.command(name='list')
+@click.option('--tfc-workspace', '-w', help='Workspace name to operate on', required=False)
 @click.option('--full-output', '-o', help='Whether or not to print the full JSON output', is_flag=True, default=False)
 @click.option('--filters', '-f', help='[status|user|page|operation|source|search]=values. Invalid filters are ignored', multiple=True)
 @click.pass_context
-def list_runs(ctx, full_output, filters):
+def list_runs(ctx, tfc_workspace, full_output, filters):
     """ List runs in <workspace_id> """
+
+    ctx = workspace_deprecation_hack(ctx, tfc_workspace)
 
     tfc_api_token = ctx.obj['tfc_api_token']
     tfc_organisation = ctx.obj['tfc_organisation']
@@ -171,6 +199,66 @@ def list_runs(ctx, full_output, filters):
     run_object = run_class.Run(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
 
     run_object.list(full_output, format_filters(filters))
+
+@click.group
+@click.pass_context
+def workspace(ctx): # pylint: disable=unused-argument
+    """ Commands for working with workspaces """
+    pass
+
+@workspace.command()
+@click.pass_context
+def list_workspaces(ctx):
+    """ List the most recent statefiles available """
+
+    tfc_api_token = ctx.obj['tfc_api_token']
+    tfc_organisation = ctx.obj['tfc_organisation']
+    tfc_root_url = ctx.obj['tfc_root_url']
+
+    from terraform_cloud_deployer.terraform_cloud import workspace as workspace_class
+    workspace_object = workspace_class.Workspace(tfc_api_token, tfc_root_url, tfc_organisation)
+
+    workspaces = workspace_object.list_workspaces()
+    pprint(workspaces)
+
+@workspace.command()
+@click.pass_context
+@click.option('--tfc-workspace', '-w', help='Workspace name to operate on', required=False)
+@click.option('--version', '-v', help='WIP: Run version to fetch state for')
+def list_states(ctx, tfc_workspace, version):
+    """ List the most recent statefiles available """
+
+    ctx = workspace_deprecation_hack(ctx, tfc_workspace)
+
+    tfc_api_token = ctx.obj['tfc_api_token']
+    tfc_organisation = ctx.obj['tfc_organisation']
+    tfc_root_url = ctx.obj['tfc_root_url']
+    tfc_workspace = ctx.obj['tfc_workspace']
+
+    from terraform_cloud_deployer.terraform_cloud import workspace as workspace_class
+    workspace_object = workspace_class.Workspace(tfc_api_token, tfc_root_url, tfc_organisation)
+
+    state_files = workspace_object.list_states(tfc_workspace, version)
+    pprint(state_files)
+
+@workspace.command()
+@click.pass_context
+@click.option('--tfc-workspace', '-w', help='Workspace name to operate on', required=False)
+@click.option('--version', '-v', help='Run version to fetch state for')
+def get_state(ctx, tfc_workspace, version):
+    """ Fetch the latest (by default) statefile for <tfc_workspace> """
+
+    ctx = workspace_deprecation_hack(ctx, tfc_workspace)
+
+    tfc_api_token = ctx.obj['tfc_api_token']
+    tfc_organisation = ctx.obj['tfc_organisation']
+    tfc_root_url = ctx.obj['tfc_root_url']
+    tfc_workspace = ctx.obj['tfc_workspace']
+
+    from terraform_cloud_deployer.terraform_cloud import workspace as workspace_class
+    workspace_object = workspace_class.Workspace(tfc_api_token, tfc_root_url, tfc_organisation)
+
+    state_file = workspace_object.get_state(tfc_workspace, version)
 
 # Helper functions
 
@@ -204,41 +292,17 @@ def format_filters(arguments):
 
     return formatted_arguments
 
-@click.group
-@click.pass_context
-def workspace(ctx): # pylint: disable=unused-argument
-    """ Commands for manipulating workspaces """
-    pass # pylint: disable=unnecessary-pass
+def workspace_deprecation_hack(ctx, tfc_workspace):
+    """
+    Nast temporary hack to ensure the top level -w still works until it's
+    removed
+    """
 
-@workspace.command()
-@click.pass_context
-@click.option('--version', '-v', help='Run version to fetch state for')
-def list_states(ctx, version):
-    """ List the most recent statefiles available """
+    if ctx.obj['tfc_workspace'] == None:
+        if tfc_workspace == None:
+            print("Workspace must either be given as an argument to this command, or as an option (-w) at the top level")
+            sys.exit(1)
 
-    tfc_api_token = ctx.obj['tfc_api_token']
-    tfc_organisation = ctx.obj['tfc_organisation']
-    tfc_workspace = ctx.obj['tfc_workspace']
-    tfc_root_url = ctx.obj['tfc_root_url']
+        ctx.obj.update({'tfc_workspace': tfc_workspace})
 
-    from terraform_cloud_deployer.terraform_cloud import workspace as workspace_class
-    workspace_object = workspace_class.Workspace(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
-
-    state_files = workspace_object.list_states(version)
-    pprint(state_files)
-
-@workspace.command()
-@click.pass_context
-@click.option('--version', '-v', help='Run version to fetch state for')
-def get_state(ctx, version):
-    """ Fetch the latest (by default) statefile for this workspace """
-
-    tfc_api_token = ctx.obj['tfc_api_token']
-    tfc_organisation = ctx.obj['tfc_organisation']
-    tfc_workspace = ctx.obj['tfc_workspace']
-    tfc_root_url = ctx.obj['tfc_root_url']
-
-    from terraform_cloud_deployer.terraform_cloud import workspace as workspace_class
-    workspace_object = workspace_class.Workspace(tfc_api_token, tfc_root_url, tfc_organisation, tfc_workspace)
-
-    state_file = workspace_object.get_state(version)
+    return ctx
