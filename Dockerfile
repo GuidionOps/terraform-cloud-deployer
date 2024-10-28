@@ -1,4 +1,4 @@
-FROM python:3.7.15
+FROM python:3.12.2
 
 COPY . /application
 RUN cd /application; pip install .
